@@ -145,6 +145,33 @@ python_embeded\python.exe -m pip install .\xatlas-python\
 
 ---
 
+## Compatibility fixes in this fork
+
+This fork keeps the upstream `Hy3D21MeshGenerator` node and restores
+`Hy3DMeshGenerator` as an alias for existing workflows, including SDS.
+
+Hunyuan shape checkpoints use the older DINOv2 attention parameter names.
+When the installed Transformers model uses `q_proj`, `k_proj`, `v_proj`, and
+`o_proj`, the DINO image encoder converts those checkpoint keys during loading.
+Older model layouts remain unchanged, and missing, unexpected, or incorrectly
+shaped weights still fail strict loading.
+
+The official Tencent Paint checkpoint is loaded with `trust_remote_code=True`
+because it includes a custom UNet. VAE slicing and tiling use the VAE's own
+methods, which are supported by newer Diffusers versions. These loading changes
+also appear in [upstream PR #89](https://github.com/visualbruno/ComfyUI-Hunyuan3d-2-1/pull/89).
+
+Run the CPU regression checks from this repository with the Python environment
+that has PyTorch, torchvision, Transformers, Diffusers, and OmegaConf installed:
+
+```bash
+HF_HUB_OFFLINE=1 python -m unittest discover -s tests -v
+```
+
+The checks use a tiny DINOv2 model and a mocked Paint pipeline. They do not
+download checkpoints or validate CUDA rendering and end-to-end textured GLB
+generation. Update this plugin and restart ComfyUI before retesting a workflow.
+
 ## 📂 Directory Overview
 
 ```
