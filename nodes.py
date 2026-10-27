@@ -2179,6 +2179,8 @@ class Hy3D21MeshGenerator2:
         return (latents,)        
 
 NODE_CLASS_MAPPINGS = {
+    # Keep workflows saved before the 2.1 node rename working (including SDS).
+    "Hy3DMeshGenerator": Hy3D21MeshGenerator,
     "Hy3D21MeshGenerator": Hy3D21MeshGenerator,
     "Hy3DMultiViewsGenerator": Hy3DMultiViewsGenerator,
     "Hy3DBakeMultiViews": Hy3DBakeMultiViews,
@@ -2209,6 +2211,7 @@ NODE_CLASS_MAPPINGS = {
     }
     
 NODE_DISPLAY_NAME_MAPPINGS = {
+    "Hy3DMeshGenerator": "Hunyuan 3D 2.1 Mesh Generator (legacy)",
     "Hy3D21MeshGenerator": "Hunyuan 3D 2.1 Mesh Generator",
     "Hy3DMultiViewsGenerator": "Hunyuan 3D 2.1 MultiViews Generator",
     "Hy3DBakeMultiViews": "Hunyuan 3D 2.1 Bake MultiViews",

@@ -130,6 +130,38 @@ class DinoImageEncoder(ImageEncoder):
     mean = [0.485, 0.456, 0.406]
     std = [0.229, 0.224, 0.225]
 
+    def _load_from_state_dict(
+        self, state_dict, prefix, local_metadata, strict,
+        missing_keys, unexpected_keys, error_msgs,
+    ):
+        # Hunyuan checkpoints use Transformers 4 DINOv2 attention names.
+        # Loading through the parent conditioner bypasses HF's from_pretrained
+        # checkpoint conversion, so adapt these names before recursive loading.
+        model_prefix = prefix + "model."
+        expected_keys = self.model.state_dict().keys()
+        attention_names = {
+            ".attention.attention.query.": ".attention.q_proj.",
+            ".attention.attention.key.": ".attention.k_proj.",
+            ".attention.attention.value.": ".attention.v_proj.",
+            ".attention.output.dense.": ".attention.o_proj.",
+        }
+        for key in list(state_dict):
+            if not key.startswith(model_prefix + "encoder.layer."):
+                continue
+            relative_key = key[len(model_prefix):]
+            for old_name, new_name in attention_names.items():
+                new_key = relative_key.replace(old_name, new_name)
+                if new_key != relative_key and new_key in expected_keys:
+                    target_key = model_prefix + new_key
+                    if target_key not in state_dict:
+                        state_dict[target_key] = state_dict.pop(key)
+                    break
+
+        super()._load_from_state_dict(
+            state_dict, prefix, local_metadata, strict,
+            missing_keys, unexpected_keys, error_msgs,
+        )
+
 
 class DinoImageEncoderMV(DinoImageEncoder):
     def __init__(
